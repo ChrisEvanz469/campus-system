@@ -5,10 +5,16 @@ const patientController = {
   async getAllPatients(req, res) {
     try {
       const patients = await Patient.getAll();
-      res.json({ success: true, count: patients.length, data: patients });
+      
+      // Return JSON if requested by API clients, otherwise render HTML view
+      if (req.query.format === 'json') {
+        return res.json({ success: true, count: patients.length, data: patients });
+      }
+
+      res.render('patients/index', { patients });
     } catch (error) {
       console.error('Error fetching patients:', error);
-      res.status(500).json({ success: false, message: 'Server error retrieving patients.' });
+      res.status(500).send('Server error retrieving patient records.');
     }
   },
 
@@ -17,12 +23,12 @@ const patientController = {
     try {
       const patient = await Patient.getById(req.params.id);
       if (!patient) {
-        return res.status(404).json({ success: false, message: 'Patient not found.' });
+        return res.status(404).send('Patient record not found.');
       }
       res.json({ success: true, data: patient });
     } catch (error) {
       console.error('Error fetching patient:', error);
-      res.status(500).json({ success: false, message: 'Server error retrieving patient.' });
+      res.status(500).send('Server error retrieving patient record.');
     }
   }
 };
