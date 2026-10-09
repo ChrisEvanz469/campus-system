@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const db = require('./config/db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,11 +15,25 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Test route
+// Root route
 app.get('/', (req, res) => {
   res.send('Campus Clinic Management System is running.');
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
+// Verify database connection and launch server
+async function startServer() {
+  try {
+    const connection = await db.getConnection();
+    console.log('Database connected successfully to campus_clinic_db.');
+    connection.release();
+
+    app.listen(PORT, () => {
+      console.log(`Server running at http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error('Database connection failed:', error.message);
+    process.exit(1);
+  }
+}
+
+startServer();
