@@ -130,6 +130,23 @@ const patientController = {
       console.error('Error recording consultation:', error);
       res.status(500).send('Server error recording consultation visit.');
     }
+  },
+
+  // GET /patients/:id/visits/:visitId/certificate
+  async renderCertificate(req, res) {
+    try {
+      const { visitId } = req.params;
+      const visit = await Visit.getById(visitId);
+
+      if (!visit) {
+        return res.status(404).send('Consultation visit record not found.');
+      }
+
+      res.render('visits/certificate', { visit });
+    } catch (error) {
+      console.error('Error generating medical certificate:', error);
+      res.status(500).send('Server error generating medical certificate.');
+    }
   }
 };
 
