@@ -1,4 +1,4 @@
-﻿<%- include('../partials/header', { title: patient.first_name + " " + patient.last_name + " - Medical Profile" }) %>
+<%- include('../partials/header', { title: patient.first_name + " " + patient.last_name + " - Medical Profile" }) %>
 
 <% if (typeof visitMessage !== "undefined" && visitMessage) { %>
   <div class="alert alert-success alert-dismissible fade show shadow-sm d-flex align-items-center mb-4" role="alert">
@@ -95,7 +95,8 @@
                   <th>Complaint</th>
                   <th>Vitals</th>
                   <th>Diagnosis & Treatment</th>
-                  <th class="pe-3">Attending Staff</th>
+                  <th>Attending</th>
+                  <th class="pe-3 text-end">Certificate</th>
                 </tr>
               </thead>
               <tbody>
@@ -117,9 +118,14 @@
                         <div class="text-muted fst-italic" style="font-size: 0.75rem;"><%= visit.remarks %></div>
                       <% } %>
                     </td>
-                    <td class="pe-3 text-nowrap">
+                    <td class="text-nowrap">
                       <%= visit.attending_staff || 'Staff' %>
                       <div class="text-muted text-capitalize" style="font-size: 0.75rem;"><%= visit.staff_role || 'Medical Personnel' %></div>
+                    </td>
+                    <td class="pe-3 text-end">
+                      <a href="/patients/<%= patient.id %>/visits/<%= visit.id %>/certificate" target="_blank" class="btn btn-sm btn-outline-success">
+                        <i class="bi bi-printer me-1"></i> Med Cert
+                      </a>
                     </td>
                   </tr>
                 <% }); %>
@@ -172,7 +178,7 @@
               <input type="text" name="blood_pressure" class="form-control" placeholder="e.g. 120/80">
             </div>
             <div class="col-md-4">
-              <label class="form-label small fw-semibold">Temperature (°C)</label>
+              <label class="form-label small fw-semibold">Temperature (�C)</label>
               <input type="number" step="0.1" name="temperature" class="form-control" placeholder="e.g. 37.2">
             </div>
             <div class="col-md-4">
