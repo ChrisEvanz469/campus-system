@@ -1,4 +1,12 @@
-<%- include('../partials/header', { title: patient.first_name + " " + patient.last_name + " - Medical Profile" }) %>
+﻿<%- include('../partials/header', { title: patient.first_name + " " + patient.last_name + " - Medical Profile" }) %>
+
+<% if (typeof visitMessage !== "undefined" && visitMessage) { %>
+  <div class="alert alert-success alert-dismissible fade show shadow-sm d-flex align-items-center mb-4" role="alert">
+    <i class="bi bi-check-circle-fill fs-5 me-2"></i>
+    <div><%= visitMessage %></div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
 
 <div class="d-flex align-items-center justify-content-between mb-4">
   <div>
@@ -8,9 +16,14 @@
     </span>
     <span class="text-secondary small ms-2">University ID: <strong><%= patient.id_number %></strong></span>
   </div>
-  <a href="/patients" class="btn btn-outline-secondary btn-sm">
-    <i class="bi bi-arrow-left me-1"></i> Back to Directory
-  </a>
+  <div class="d-flex gap-2">
+    <a href="/patients" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Directory
+    </a>
+    <button type="button" class="btn btn-primary btn-sm shadow-sm" data-bs-toggle="modal" data-bs-target="#recordVisitModal">
+      <i class="bi bi-plus-circle me-1"></i> Record Consultation
+    </button>
+  </div>
 </div>
 
 <div class="row g-4">
@@ -81,8 +94,8 @@
                   <th class="ps-3">Date</th>
                   <th>Complaint</th>
                   <th>Vitals</th>
-                  <th>Diagnosis / Remarks</th>
-                  <th class="pe-3">Attending</th>
+                  <th>Diagnosis & Treatment</th>
+                  <th class="pe-3">Attending Staff</th>
                 </tr>
               </thead>
               <tbody>
@@ -91,16 +104,22 @@
                     <td class="ps-3 text-nowrap"><%= new Date(visit.visit_date).toLocaleDateString() %></td>
                     <td class="fw-medium"><%= visit.chief_complaint %></td>
                     <td>
-                      <span class="badge bg-light text-dark border">BP: <%= visit.blood_pressure || '--' %></span>
-                      <span class="badge bg-light text-dark border">Temp: <%= visit.temperature ? visit.temperature + '�C' : '--' %></span>
+                      <div><span class="badge bg-light text-dark border">BP: <%= visit.blood_pressure || '--' %></span></div>
+                      <div class="mt-1">
+                        <span class="badge bg-light text-dark border">Temp: <%= visit.temperature ? visit.temperature + ' &deg;C' : '--' %></span>
+                        <span class="badge bg-light text-dark border">HR: <%= visit.pulse_rate ? visit.pulse_rate + ' bpm' : '--' %></span>
+                      </div>
                     </td>
                     <td>
-                      <div><strong>Diagnosis:</strong> <%= visit.diagnosis || 'None' %></div>
+                      <div><strong>Dx:</strong> <%= visit.diagnosis || 'None' %></div>
                       <div class="text-secondary small"><strong>Rx:</strong> <%= visit.treatment || 'None' %></div>
+                      <% if (visit.remarks) { %>
+                        <div class="text-muted fst-italic" style="font-size: 0.75rem;"><%= visit.remarks %></div>
+                      <% } %>
                     </td>
                     <td class="pe-3 text-nowrap">
                       <%= visit.attending_staff || 'Staff' %>
-                      <div class="text-muted text-capitalize" style="font-size: 0.75rem;"><%= visit.staff_role %></div>
+                      <div class="text-muted text-capitalize" style="font-size: 0.75rem;"><%= visit.staff_role || 'Medical Personnel' %></div>
                     </td>
                   </tr>
                 <% }); %>
@@ -109,6 +128,84 @@
           </div>
         <% } %>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Record Consultation Visit -->
+<div class="modal fade" id="recordVisitModal" tabindex="-1" aria-labelledby="recordVisitModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <form action="/patients/<%= patient.id %>/visits" method="POST">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold" id="recordVisitModalLabel">
+            <i class="bi bi-clipboard2-pulse me-2"></i>Record Clinical Consultation
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body p-4">
+          <!-- Attending Staff -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Attending Medical Personnel</label>
+            <select name="attending_user_id" class="form-select">
+              <option value="">-- Select Attending Staff --</option>
+              <% staff.forEach(member => { %>
+                <option value="<%= member.id %>"><%= member.full_name %> (<%= member.role %>)</option>
+              <% }); %>
+            </select>
+          </div>
+
+          <!-- Chief Complaint -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Chief Complaint / Symptoms <span class="text-danger">*</span></label>
+            <textarea name="chief_complaint" class="form-control" rows="2" placeholder="e.g. Dizziness, persistent dry cough, elevated body temperature" required></textarea>
+          </div>
+
+          <!-- Vitals (3 Columns) -->
+          <h6 class="text-primary text-uppercase fw-bold small mt-4 mb-2 border-bottom pb-1">
+            <i class="bi bi-activity me-1"></i> Patient Vital Signs
+          </h6>
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Blood Pressure</label>
+              <input type="text" name="blood_pressure" class="form-control" placeholder="e.g. 120/80">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Temperature (°C)</label>
+              <input type="number" step="0.1" name="temperature" class="form-control" placeholder="e.g. 37.2">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Pulse Rate (BPM)</label>
+              <input type="number" name="pulse_rate" class="form-control" placeholder="e.g. 76">
+            </div>
+          </div>
+
+          <!-- Clinical Assessment & Treatment -->
+          <h6 class="text-primary text-uppercase fw-bold small mt-4 mb-2 border-bottom pb-1">
+            <i class="bi bi-capsule me-1"></i> Assessment & Prescription
+          </h6>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Diagnosis</label>
+            <input type="text" name="diagnosis" class="form-control" placeholder="e.g. Upper Respiratory Tract Infection (URTI)">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Treatment / Dispensed Medicine</label>
+            <textarea name="treatment" class="form-control" rows="2" placeholder="e.g. Paracetamol 500mg 1 tab every 6 hrs, rest advised"></textarea>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-semibold">Remarks / Doctor's Advice</label>
+            <input type="text" name="remarks" class="form-control" placeholder="e.g. Advised to hydrate and return after 3 days if fever persists">
+          </div>
+        </div>
+
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm px-4">
+            <i class="bi bi-save me-1"></i> Save Consultation
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
