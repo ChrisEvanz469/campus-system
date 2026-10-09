@@ -18,10 +18,30 @@
   </button>
 </div>
 
+<!-- Search & Low Stock Toggle Bar -->
+<div class="card border-0 shadow-sm rounded-3 mb-3 p-3 bg-white">
+  <div class="row g-2 align-items-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="input-group">
+        <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <input type="text" id="medSearchInput" class="form-control border-start-0" placeholder="Search medicine name or category...">
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-7 d-flex align-items-center justify-content-md-end gap-2">
+      <button type="button" id="toggleLowStockBtn" class="btn btn-sm btn-outline-danger">
+        <i class="bi bi-exclamation-triangle me-1"></i> Show Low Stock Only
+      </button>
+      <button type="button" id="resetMedFiltersBtn" class="btn btn-sm btn-light border text-secondary">
+        Reset
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="card border-0 shadow-sm rounded-3">
   <div class="card-body p-0">
     <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0">
+      <table class="table table-hover align-middle mb-0" id="medsTable">
         <thead class="table-light border-bottom">
           <tr>
             <th class="ps-4">Medicine / Supply</th>
@@ -32,14 +52,16 @@
             <th class="text-end pe-4">Stock Action</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="medsTableBody">
           <% if (medicines.length === 0) { %>
             <tr>
               <td colspan="6" class="text-center py-5 text-muted">No supplies recorded in the pharmacy database.</td>
             </tr>
           <% } else { %>
             <% medicines.forEach(med => { %>
-              <tr>
+              <tr class="med-row" 
+                  data-lowstock="<%= med.stock_quantity <= 50 ? 'true' : 'false' %>"
+                  data-search="<%= (med.name + ' ' + (med.category || '')).toLowerCase() %>">
                 <td class="ps-4 fw-semibold text-dark"><%= med.name %></td>
                 <td><span class="badge bg-light text-secondary border"><%= med.category || "General" %></span></td>
                 <td>
@@ -52,7 +74,6 @@
                 <td class="text-muted"><%= med.unit %></td>
                 <td><%= med.expiration_date ? new Date(med.expiration_date).toLocaleDateString() : "N/A" %></td>
                 <td class="text-end pe-4">
-                  <!-- Quick Dispense Form -->
                   <form action="/medicines/<%= med.id %>/adjust" method="POST" class="d-inline-flex gap-1 align-items-center justify-content-end">
                     <input type="number" name="amount" min="1" max="<%= med.stock_quantity %>" value="1" class="form-control form-control-sm text-center" style="width: 65px;" required>
                     <button type="submit" name="action" value="dispense" class="btn btn-sm btn-outline-danger" <%= med.stock_quantity === 0 ? "disabled" : "" %>>
@@ -66,6 +87,13 @@
               </tr>
             <% }); %>
           <% } %>
+          <!-- Dynamic Empty State -->
+          <tr id="noMedsRow" style="display: none;">
+            <td colspan="6" class="text-center py-5 text-muted">
+              <i class="bi bi-search fs-3 d-block mb-2 text-secondary"></i>
+              No medicine supplies match your query.
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -117,5 +145,61 @@
     </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const medSearchInput = document.getElementById('medSearchInput');
+    const toggleLowStockBtn = document.getElementById('toggleLowStockBtn');
+    const resetMedFiltersBtn = document.getElementById('resetMedFiltersBtn');
+    const medRows = document.querySelectorAll('.med-row');
+    const noMedsRow = document.getElementById('noMedsRow');
+
+    let lowStockOnly = false;
+
+    function filterMeds() {
+      const query = medSearchInput.value.trim().toLowerCase();
+      let visibleCount = 0;
+
+      medRows.forEach(row => {
+        const isLow = row.dataset.lowstock === 'true';
+        const matchesStock = !lowStockOnly || isLow;
+        const matchesQuery = !query || row.dataset.search.includes(query);
+
+        if (matchesStock && matchesQuery) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      if (noMedsRow) {
+        noMedsRow.style.display = (visibleCount === 0 && medRows.length > 0) ? '' : 'none';
+      }
+    }
+
+    medSearchInput.addEventListener('input', filterMeds);
+
+    toggleLowStockBtn.addEventListener('click', () => {
+      lowStockOnly = !lowStockOnly;
+      if (lowStockOnly) {
+        toggleLowStockBtn.classList.remove('btn-outline-danger');
+        toggleLowStockBtn.classList.add('btn-danger');
+      } else {
+        toggleLowStockBtn.classList.remove('btn-danger');
+        toggleLowStockBtn.classList.add('btn-outline-danger');
+      }
+      filterMeds();
+    });
+
+    resetMedFiltersBtn.addEventListener('click', () => {
+      medSearchInput.value = '';
+      lowStockOnly = false;
+      toggleLowStockBtn.classList.remove('btn-danger');
+      toggleLowStockBtn.classList.add('btn-outline-danger');
+      filterMeds();
+    });
+  });
+</script>
 
 <%- include('../partials/footer') %>

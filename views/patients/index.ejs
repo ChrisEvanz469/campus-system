@@ -18,10 +18,29 @@
   </a>
 </div>
 
+<!-- Search & Role Filter Bar -->
+<div class="card border-0 shadow-sm rounded-3 mb-3 p-3 bg-white">
+  <div class="row g-2 align-items-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="input-group">
+        <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <input type="text" id="patientSearchInput" class="form-control border-start-0" placeholder="Search by name, ID number, or course...">
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-7 d-flex align-items-center justify-content-md-end gap-1 flex-wrap">
+      <span class="small text-secondary fw-semibold me-1"><i class="bi bi-funnel me-1"></i>Role:</span>
+      <button type="button" class="btn btn-sm btn-primary role-filter-btn" data-role="all">All (<%= patients.length %>)</button>
+      <button type="button" class="btn btn-sm btn-outline-info text-dark role-filter-btn" data-role="student">Students</button>
+      <button type="button" class="btn btn-sm btn-outline-success role-filter-btn" data-role="faculty">Faculty</button>
+      <button type="button" class="btn btn-sm btn-outline-secondary role-filter-btn" data-role="staff">Staff</button>
+    </div>
+  </div>
+</div>
+
 <div class="card border-0 shadow-sm rounded-3">
   <div class="card-body p-0">
     <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0">
+      <table class="table table-hover align-middle mb-0" id="patientsTable">
         <thead class="table-light border-bottom">
           <tr>
             <th class="ps-4">ID Number</th>
@@ -32,14 +51,16 @@
             <th class="text-end pe-4">Actions</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="patientsTableBody">
           <% if (patients.length === 0) { %>
-            <tr>
+            <tr id="emptyStaticRow">
               <td colspan="6" class="text-center py-5 text-muted">No patient records found in the clinic database.</td>
             </tr>
           <% } else { %>
             <% patients.forEach(patient => { %>
-              <tr>
+              <tr class="patient-row" 
+                  data-role="<%= patient.patient_type.toLowerCase() %>" 
+                  data-search="<%= (patient.id_number + ' ' + patient.first_name + ' ' + patient.last_name + ' ' + (patient.department_or_course || '')).toLowerCase() %>">
                 <td class="ps-4 fw-semibold text-primary"><%= patient.id_number %></td>
                 <td class="fw-medium"><%= patient.last_name %>, <%= patient.first_name %></td>
                 <td>
@@ -57,10 +78,69 @@
               </tr>
             <% }); %>
           <% } %>
+          <!-- Dynamic No Results Row -->
+          <tr id="noResultsRow" style="display: none;">
+            <td colspan="6" class="text-center py-5 text-muted">
+              <i class="bi bi-search fs-3 d-block mb-2 text-secondary"></i>
+              No patient records match your current search query or filter.
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('patientSearchInput');
+    const filterButtons = document.querySelectorAll('.role-filter-btn');
+    const rows = document.querySelectorAll('.patient-row');
+    const noResultsRow = document.getElementById('noResultsRow');
+
+    let activeRole = 'all';
+
+    function filterRecords() {
+      const query = searchInput.value.trim().toLowerCase();
+      let visibleCount = 0;
+
+      rows.forEach(row => {
+        const matchesRole = (activeRole === 'all') || (row.dataset.role === activeRole);
+        const matchesQuery = !query || row.dataset.search.includes(query);
+
+        if (matchesRole && matchesQuery) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      if (noResultsRow) {
+        noResultsRow.style.display = (visibleCount === 0 && rows.length > 0) ? '' : 'none';
+      }
+    }
+
+    searchInput.addEventListener('input', filterRecords);
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterButtons.forEach(b => {
+          b.classList.remove('btn-primary', 'btn-info', 'btn-success', 'btn-secondary');
+          b.classList.add('btn-outline-secondary');
+        });
+
+        btn.classList.remove('btn-outline-secondary');
+        if (btn.dataset.role === 'all') btn.classList.add('btn-primary');
+        if (btn.dataset.role === 'student') btn.classList.add('btn-info', 'text-dark');
+        if (btn.dataset.role === 'faculty') btn.classList.add('btn-success');
+        if (btn.dataset.role === 'staff') btn.classList.add('btn-secondary');
+
+        activeRole = btn.dataset.role;
+        filterRecords();
+      });
+    });
+  });
+</script>
 
 <%- include('../partials/footer') %>
