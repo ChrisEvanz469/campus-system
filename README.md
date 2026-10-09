@@ -10,7 +10,10 @@ The **Campus Clinic Management System** streamlines university healthcare workfl
 ---
 
 ## 2. Team Members & Primary Responsibilities
-* **Cris Ivan M. Nual** – System Architecture, Full-Stack Development (Backend Routes, Frontend UI/EJS, Database Schema, Authentication & RBAC)
+* **Cris Ivan M. Nual** – Database Modeling, System Architecture & Core Backend (Relational Schema, MySQL Connection Pooling, Password Encryption, Session Management, Route Guards, and Data Models)
+* **April Peñones** – Clinical Documentation & Medical Profile UI (Patient Clinical Profile View, Printable Medical Certificate Generator, `@media print` Stylesheets, and Consultation Vitals Interface)
+* **Jasmine Baldoza** – Patient Intake, Form Validation & Real-Time Filtering (Patient Intake Forms, Duplicate ID Validation Alerts, Client-Side Live Search Engine, and Classification Filter Pills)
+* **Kyle Martirez** – Pharmacy Stock Management & Analytics Dashboard (Clinic KPI Dashboard Counters, Metric Aggregation Controllers, Medicine Inventory Tracking, and Stock Restock/Dispense Handlers)
 
 ---
 
