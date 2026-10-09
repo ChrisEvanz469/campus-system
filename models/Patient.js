@@ -13,6 +13,19 @@ const Patient = {
     return rows[0] || null;
   },
 
+  // Get consultation visit records for a patient
+  async getVisitsByPatientId(patientId) {
+    const [rows] = await db.query(
+      `SELECT v.*, u.full_name AS attending_staff, u.role AS staff_role
+       FROM visits v
+       LEFT JOIN users u ON v.attending_user_id = u.id
+       WHERE v.patient_id = ?
+       ORDER BY v.visit_date DESC`,
+      [patientId]
+    );
+    return rows;
+  },
+
   // Create new patient record
   async create(patientData) {
     const {
