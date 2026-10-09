@@ -76,10 +76,17 @@ const patientController = {
       if (!patient) {
         return res.status(404).send('Patient record not found.');
       }
-      res.json({ success: true, data: patient });
+
+      const visits = await Patient.getVisitsByPatientId(req.params.id);
+
+      if (req.query.format === 'json') {
+        return res.json({ success: true, data: { patient, visits } });
+      }
+
+      res.render('patients/show', { patient, visits });
     } catch (error) {
-      console.error('Error fetching patient:', error);
-      res.status(500).send('Server error retrieving patient record.');
+      console.error('Error fetching patient profile:', error);
+      res.status(500).send('Server error retrieving patient profile.');
     }
   }
 };

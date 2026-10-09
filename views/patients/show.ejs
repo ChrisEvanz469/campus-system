@@ -1,0 +1,116 @@
+<%- include('../partials/header', { title: patient.first_name + " " + patient.last_name + " - Medical Profile" }) %>
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h3 class="fw-bold text-dark mb-0"><%= patient.last_name %>, <%= patient.first_name %></h3>
+    <span class="badge text-capitalize <%= patient.patient_type === 'student' ? 'bg-info text-dark' : (patient.patient_type === 'faculty' ? 'bg-success' : 'bg-secondary') %>">
+      <%= patient.patient_type %>
+    </span>
+    <span class="text-secondary small ms-2">University ID: <strong><%= patient.id_number %></strong></span>
+  </div>
+  <a href="/patients" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i> Back to Directory
+  </a>
+</div>
+
+<div class="row g-4">
+  <!-- Left Column: Patient Bio & Emergency Info -->
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+      <div class="card-header bg-white border-0 pt-4 pb-0">
+        <h6 class="fw-bold text-primary text-uppercase small mb-0">
+          <i class="bi bi-person-lines-fill me-1"></i> Demographics
+        </h6>
+      </div>
+      <div class="card-body">
+        <ul class="list-group list-group-flush small">
+          <li class="list-group-item d-flex justify-content-between px-0">
+            <span class="text-secondary">Gender</span>
+            <span class="fw-semibold text-capitalize"><%= patient.gender %></span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between px-0">
+            <span class="text-secondary">Department / Course</span>
+            <span class="fw-semibold"><%= patient.department_or_course || 'N/A' %></span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between px-0">
+            <span class="text-secondary">Date of Birth</span>
+            <span class="fw-semibold"><%= patient.birth_date ? new Date(patient.birth_date).toLocaleDateString() : 'Not recorded' %></span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between px-0">
+            <span class="text-secondary">Contact Number</span>
+            <span class="fw-semibold"><%= patient.contact_number || 'N/A' %></span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-3 bg-light border-start border-danger border-4">
+      <div class="card-body">
+        <h6 class="fw-bold text-danger text-uppercase small mb-2">
+          <i class="bi bi-shield-exclamation me-1"></i> Emergency Contact
+        </h6>
+        <p class="mb-1 small">
+          <strong>Contact Person:</strong> <%= patient.emergency_contact || 'None registered' %>
+        </p>
+        <p class="mb-0 small">
+          <strong>Emergency Phone:</strong> <%= patient.emergency_phone || 'None registered' %>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Medical Consultations History -->
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm rounded-3">
+      <div class="card-header bg-white border-0 pt-4 pb-2 d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold text-primary text-uppercase small mb-0">
+          <i class="bi bi-clipboard2-pulse me-1"></i> Consultation History (<%= visits.length %>)
+        </h6>
+      </div>
+      <div class="card-body p-0">
+        <% if (visits.length === 0) { %>
+          <div class="text-center py-5 text-muted small">
+            <i class="bi bi-folder2-open fs-2 d-block text-secondary mb-2"></i>
+            No clinical consultations recorded yet for this patient.
+          </div>
+        <% } else { %>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 small">
+              <thead class="table-light">
+                <tr>
+                  <th class="ps-3">Date</th>
+                  <th>Complaint</th>
+                  <th>Vitals</th>
+                  <th>Diagnosis / Remarks</th>
+                  <th class="pe-3">Attending</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% visits.forEach(visit => { %>
+                  <tr>
+                    <td class="ps-3 text-nowrap"><%= new Date(visit.visit_date).toLocaleDateString() %></td>
+                    <td class="fw-medium"><%= visit.chief_complaint %></td>
+                    <td>
+                      <span class="badge bg-light text-dark border">BP: <%= visit.blood_pressure || '--' %></span>
+                      <span class="badge bg-light text-dark border">Temp: <%= visit.temperature ? visit.temperature + '°C' : '--' %></span>
+                    </td>
+                    <td>
+                      <div><strong>Diagnosis:</strong> <%= visit.diagnosis || 'None' %></div>
+                      <div class="text-secondary small"><strong>Rx:</strong> <%= visit.treatment || 'None' %></div>
+                    </td>
+                    <td class="pe-3 text-nowrap">
+                      <%= visit.attending_staff || 'Staff' %>
+                      <div class="text-muted text-capitalize" style="font-size: 0.75rem;"><%= visit.staff_role %></div>
+                    </td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
