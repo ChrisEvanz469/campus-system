@@ -1,0 +1,96 @@
+<%- include('../partials/header', { title: 'Register New Patient' }) %>
+
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h3 class="fw-bold text-dark mb-0">Patient Registration</h3>
+        <p class="text-secondary small mb-0">Enroll a student, faculty member, or campus staff into the clinic registry</p>
+      </div>
+      <a href="/patients" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Back to Directory
+      </a>
+    </div>
+
+    <% if (error) { %>
+      <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i><%= error %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    <% } %>
+
+    <form action="/patients" method="POST" class="card border-0 shadow-sm p-4 rounded-3">
+      <!-- Section 1: Basic Identity -->
+      <h6 class="text-primary text-uppercase fw-bold small mb-3 border-bottom pb-2">
+        <i class="bi bi-person-badge me-1"></i> Identification & Role
+      </h6>
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">University ID Number <span class="text-danger">*</span></label>
+          <input type="text" name="id_number" class="form-control" placeholder="e.g. 2024-10892" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Classification <span class="text-danger">*</span></label>
+          <select name="patient_type" class="form-select" required>
+            <option value="student" selected>Student</option>
+            <option value="faculty">Faculty Member</option>
+            <option value="staff">University Staff</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">First Name <span class="text-danger">*</span></label>
+          <input type="text" name="first_name" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Last Name <span class="text-danger">*</span></label>
+          <input type="text" name="last_name" class="form-control" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold">Gender <span class="text-danger">*</span></label>
+          <select name="gender" class="form-select" required>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold">Date of Birth</label>
+          <input type="date" name="birth_date" class="form-control">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold">Department / Course</label>
+          <input type="text" name="department_or_course" class="form-control" placeholder="e.g. BS Information Technology">
+        </div>
+      </div>
+
+      <!-- Section 2: Contact Information -->
+      <h6 class="text-primary text-uppercase fw-bold small mb-3 border-bottom pb-2">
+        <i class="bi bi-telephone me-1"></i> Contact & Emergency Details
+      </h6>
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Contact Phone Number</label>
+          <input type="text" name="contact_number" class="form-control" placeholder="09xxxxxxxxx">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Emergency Contact Person</label>
+          <input type="text" name="emergency_contact" class="form-control" placeholder="e.g. Maria Santos (Parent)">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Emergency Contact Phone</label>
+          <input type="text" name="emergency_phone" class="form-control" placeholder="09xxxxxxxxx">
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+        <a href="/patients" class="btn btn-light px-4">Cancel</a>
+        <button type="submit" class="btn btn-primary px-4">
+          <i class="bi bi-check2-circle me-1"></i> Save Patient Record
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
