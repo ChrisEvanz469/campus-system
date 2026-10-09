@@ -14,6 +14,7 @@ The **Campus Clinic Management System** streamlines university healthcare workfl
 * **April Peñones** – Clinical Documentation & Medical Profile UI (Patient Clinical Profile View, Printable Medical Certificate Generator, `@media print` Stylesheets, and Consultation Vitals Interface)
 * **Jasmine Baldoza** – Patient Intake, Form Validation & Real-Time Filtering (Patient Intake Forms, Duplicate ID Validation Alerts, Client-Side Live Search Engine, and Classification Filter Pills)
 * **Kyle Martirez** – Pharmacy Stock Management & Analytics Dashboard (Clinic KPI Dashboard Counters, Metric Aggregation Controllers, Medicine Inventory Tracking, and Stock Restock/Dispense Handlers)
+
 ---
 
 ## 3. Assigned System
