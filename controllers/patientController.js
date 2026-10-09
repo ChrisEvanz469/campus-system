@@ -1,4 +1,6 @@
 const Patient = require('../models/Patient');
+const Visit = require('../models/Visit');
+const db = require('../config/db');
 
 const patientController = {
   // GET /patients
@@ -78,15 +80,55 @@ const patientController = {
       }
 
       const visits = await Patient.getVisitsByPatientId(req.params.id);
+      const [staff] = await db.query('SELECT id, full_name, role FROM users ORDER BY full_name ASC');
+      const visitMessage = req.query.visitRecorded ? 'Consultation visit successfully recorded!' : null;
 
       if (req.query.format === 'json') {
         return res.json({ success: true, data: { patient, visits } });
       }
 
-      res.render('patients/show', { patient, visits });
+      res.render('patients/show', { patient, visits, staff, visitMessage });
     } catch (error) {
       console.error('Error fetching patient profile:', error);
       res.status(500).send('Server error retrieving patient profile.');
+    }
+  },
+
+  // POST /patients/:id/visits
+  async recordVisit(req, res) {
+    try {
+      const patientId = req.params.id;
+      const {
+        attending_user_id,
+        blood_pressure,
+        temperature,
+        pulse_rate,
+        chief_complaint,
+        diagnosis,
+        treatment,
+        remarks
+      } = req.body;
+
+      if (!chief_complaint) {
+        return res.status(400).send('Chief complaint is required.');
+      }
+
+      await Visit.create({
+        patient_id: patientId,
+        attending_user_id: attending_user_id || null,
+        blood_pressure: blood_pressure ? blood_pressure.trim() : null,
+        temperature: temperature ? parseFloat(temperature) : null,
+        pulse_rate: pulse_rate ? parseInt(pulse_rate, 10) : null,
+        chief_complaint: chief_complaint.trim(),
+        diagnosis: diagnosis ? diagnosis.trim() : null,
+        treatment: treatment ? treatment.trim() : null,
+        remarks: remarks ? remarks.trim() : null
+      });
+
+      res.redirect(`/patients/${patientId}?visitRecorded=true`);
+    } catch (error) {
+      console.error('Error recording consultation:', error);
+      res.status(500).send('Server error recording consultation visit.');
     }
   }
 };
