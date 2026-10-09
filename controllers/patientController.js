@@ -1,5 +1,6 @@
 const Patient = require('../models/Patient');
 const Visit = require('../models/Visit');
+const Medicine = require('../models/Medicine');
 const db = require('../config/db');
 
 const patientController = {
@@ -81,13 +82,14 @@ const patientController = {
 
       const visits = await Patient.getVisitsByPatientId(req.params.id);
       const [staff] = await db.query('SELECT id, full_name, role FROM users ORDER BY full_name ASC');
+      const [medicines] = await db.query('SELECT * FROM medicines WHERE stock_quantity > 0 ORDER BY name ASC');
       const visitMessage = req.query.visitRecorded ? 'Consultation visit successfully recorded!' : null;
 
       if (req.query.format === 'json') {
         return res.json({ success: true, data: { patient, visits } });
       }
 
-      res.render('patients/show', { patient, visits, staff, visitMessage });
+      res.render('patients/show', { patient, visits, staff, medicines, visitMessage });
     } catch (error) {
       console.error('Error fetching patient profile:', error);
       res.status(500).send('Server error retrieving patient profile.');
@@ -105,12 +107,29 @@ const patientController = {
         pulse_rate,
         chief_complaint,
         diagnosis,
-        treatment,
+        medicine_id,
+        dispense_quantity,
+        additional_treatment,
         remarks
       } = req.body;
 
       if (!chief_complaint) {
         return res.status(400).send('Chief complaint is required.');
+      }
+
+      let formattedTreatment = additional_treatment ? additional_treatment.trim() : '';
+
+      // If a clinic medication is dispensed, deduct from stock and record details
+      if (medicine_id) {
+        const qty = parseInt(dispense_quantity, 10) || 1;
+        const [medRows] = await db.query('SELECT name, unit, stock_quantity FROM medicines WHERE id = ?', [medicine_id]);
+        
+        if (medRows.length > 0) {
+          const med = medRows[0];
+          await Medicine.adjustStock(medicine_id, -qty);
+          const dispensedNote = `Dispensed: ${med.name} (${qty} ${med.unit})`;
+          formattedTreatment = formattedTreatment ? `${dispensedNote} | ${formattedTreatment}` : dispensedNote;
+        }
       }
 
       await Visit.create({
@@ -121,7 +140,7 @@ const patientController = {
         pulse_rate: pulse_rate ? parseInt(pulse_rate, 10) : null,
         chief_complaint: chief_complaint.trim(),
         diagnosis: diagnosis ? diagnosis.trim() : null,
-        treatment: treatment ? treatment.trim() : null,
+        treatment: formattedTreatment || 'Observation and rest advised',
         remarks: remarks ? remarks.trim() : null
       });
 
