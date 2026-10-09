@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const db = require('./config/db');
 
+const dashboardRoutes = require('./routes/dashboardRoutes');
 const patientRoutes = require('./routes/patientRoutes');
 const medicineRoutes = require('./routes/medicineRoutes');
 
@@ -18,12 +19,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Root redirect
+// Root redirect to dashboard
 app.get('/', (req, res) => {
-  res.redirect('/patients');
+  res.redirect('/dashboard');
 });
 
 // Feature Routes
+app.use('/dashboard', dashboardRoutes);
 app.use('/patients', patientRoutes);
 app.use('/medicines', medicineRoutes);
 
