@@ -3,6 +3,8 @@ const express = require('express');
 const path = require('path');
 const db = require('./config/db');
 
+const patientRoutes = require('./routes/patientRoutes');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -15,10 +17,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Root route
+// Base Routes
 app.get('/', (req, res) => {
   res.send('Campus Clinic Management System is running.');
 });
+
+// Feature Routes
+app.use('/patients', patientRoutes);
 
 // Verify database connection and launch server
 async function startServer() {
